@@ -66,32 +66,47 @@ export class AudioRecorder {
           noiseSuppression: true,
           echoCancellation: true,
           autoGainControl: true,
+          // Enhanced audio settings for better accuracy
+          sampleRate: this.sampleRate,
+          channelCount: 1, // Mono for better speech recognition
         },
       });
       this.audioContext = await audioContext({ sampleRate: this.sampleRate });
       this.source = this.audioContext.createMediaStreamSource(this.stream);
 
-      // Create filters for noise reduction
+      // Enhanced filters for better speech clarity
       const highpassFilter = this.audioContext.createBiquadFilter();
       highpassFilter.type = 'highpass';
-      highpassFilter.frequency.setValueAtTime(120, this.audioContext.currentTime); // Cut rumble below 120Hz
+      highpassFilter.frequency.setValueAtTime(80, this.audioContext.currentTime); // Lower cutoff for more speech
 
       const lowpassFilter = this.audioContext.createBiquadFilter();
       lowpassFilter.type = 'lowpass';
-      lowpassFilter.frequency.setValueAtTime(8000, this.audioContext.currentTime); // Cut noise above 8kHz
+      lowpassFilter.frequency.setValueAtTime(6000, this.audioContext.currentTime); // Better for speech
 
-      // Create a compressor to normalize volume
+      // Add a notch filter to reduce feedback
+      const notchFilter = this.audioContext.createBiquadFilter();
+      notchFilter.type = 'notch';
+      notchFilter.frequency.setValueAtTime(1000, this.audioContext.currentTime); // Reduce feedback at 1kHz
+      notchFilter.Q.setValueAtTime(5, this.audioContext.currentTime);
+
+      // Enhanced compressor for better dynamics
       const compressor = this.audioContext.createDynamicsCompressor();
-      compressor.threshold.setValueAtTime(-50, this.audioContext.currentTime);
-      compressor.knee.setValueAtTime(40, this.audioContext.currentTime);
-      compressor.ratio.setValueAtTime(12, this.audioContext.currentTime);
-      compressor.attack.setValueAtTime(0, this.audioContext.currentTime);
-      compressor.release.setValueAtTime(0.25, this.audioContext.currentTime);
+      compressor.threshold.setValueAtTime(-24, this.audioContext.currentTime);
+      compressor.knee.setValueAtTime(30, this.audioContext.currentTime);
+      compressor.ratio.setValueAtTime(8, this.audioContext.currentTime);
+      compressor.attack.setValueAtTime(0.003, this.audioContext.currentTime);
+      compressor.release.setValueAtTime(0.1, this.audioContext.currentTime);
 
-      // Chain the nodes: source -> highpass -> lowpass -> compressor -> worklets
+      // Add a gain node for volume control
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.setValueAtTime(1.5, this.audioContext.currentTime); // Boost input level
+
+      // Chain nodes: source -> highpass -> notch -> lowpass -> compressor -> gain -> worklets
       this.source.connect(highpassFilter);
-      highpassFilter.connect(lowpassFilter);
+      highpassFilter.connect(notchFilter);
+      notchFilter.connect(lowpassFilter);
       lowpassFilter.connect(compressor);
+      compressor.connect(gainNode);
 
       const workletName = 'audio-recorder-worklet';
       const src = createWorketFromSrc(workletName, AudioRecordingWorklet);
@@ -112,8 +127,8 @@ export class AudioRecorder {
           this.emitter.emit('data', arrayBufferString);
         }
       };
-      compressor.connect(this.recordingWorklet);
-
+      gainNode.connect(this.recordingWorklet);
+      
       // vu meter worklet
       const vuWorkletName = 'vu-meter';
       await this.audioContext.audioWorklet.addModule(
@@ -124,8 +139,8 @@ export class AudioRecorder {
         // FIX: Changed this.emit to this.emitter.emit
         this.emitter.emit('volume', ev.data.volume);
       };
-
-      compressor.connect(this.vuWorklet);
+      
+      gainNode.connect(this.vuWorklet);
       this.recording = true;
       resolve();
       this.starting = null;

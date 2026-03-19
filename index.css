@@ -46,8 +46,115 @@ code {
   scrollbar-color: var(--gray-600) var(--gray-900);
   scrollbar-width: thin;
   --font-family: 'google sans' 'Space Mono', monospace;
-  /* Colors */
-  --Neutral-00: #000;
+  /* Enhanced Mic Visualizer Styles */
+.mic-visualizer-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.mic-visualizer-container.active {
+  background: rgba(31, 148, 255, 0.1);
+  border-color: rgba(31, 148, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(31, 148, 255, 0.2);
+}
+
+.mic-visualizer-container.animating {
+  animation: visualizerPulse 0.5s ease-in-out;
+}
+
+.mic-visualizer-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 40px;
+  padding: 0 4px;
+}
+
+.mic-visualizer-bar {
+  flex: 1;
+  border-radius: 2px;
+  transition: all 0.15s ease-out;
+  cursor: pointer;
+  position: relative;
+}
+
+.mic-visualizer-bar:hover {
+  transform: scaleY(1.1);
+  filter: brightness(1.2);
+}
+
+.mic-visualizer-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+}
+
+.pulse-dot {
+  width: 100%;
+  height: 100%;
+  background: #44ff44;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(68, 255, 68, 0.5);
+}
+
+@keyframes visualizerPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+/* Existing mic visualizer styles for compatibility */
+.mic-visualizer-bar {
+  min-height: 2px;
+  background: linear-gradient(to top, var(--accent-blue-active), var(--accent-blue));
+}
+
+/* Intensity-based colors for visualizer bars */
+.mic-visualizer-bar.high {
+  background: linear-gradient(to top, #ff4444, #cc0000);
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.4);
+}
+
+.mic-visualizer-bar.medium {
+  background: linear-gradient(to top, #ffaa00, #ff6600);
+  box-shadow: 0 0 6px rgba(255, 170, 0, 0.3);
+}
+
+.mic-visualizer-bar.low {
+  background: linear-gradient(to top, #44ff44, #00cc00);
+  box-shadow: 0 0 4px rgba(68, 255, 68, 0.2);
+}
+
+.mic-visualizer-bar.inactive {
+  background: linear-gradient(to top, #666666, #333333);
+  opacity: 0.3;
+}
+
+.mic-visualizer-bar.hovered {
+  transform: scaleY(1.1);
+  filter: brightness(1.2);
+}
   --Neutral-5: #181a1b;
   --Neutral-10: #1c1f21;
   --Neutral-15: #232729;

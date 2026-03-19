@@ -23,10 +23,14 @@ const VolMeterWorket = `
     volume
     updateIntervalInMS
     nextUpdateFrame
+    peakVolume
+    averageVolume
 
     constructor() {
       super()
       this.volume = 0
+      this.peakVolume = 0
+      this.averageVolume = 0
       this.updateIntervalInMS = 25
       this.nextUpdateFrame = this.updateIntervalInMS
       this.port.onmessage = event => {
@@ -47,18 +51,35 @@ const VolMeterWorket = `
         const samples = input[0]
         let sum = 0
         let rms = 0
+        let peak = 0
 
+        // Calculate RMS and peak values for better accuracy
         for (let i = 0; i < samples.length; ++i) {
-          sum += samples[i] * samples[i]
+          const sample = samples[i]
+          sum += sample * sample
+          peak = Math.max(peak, Math.abs(sample))
         }
 
         rms = Math.sqrt(sum / samples.length)
-        this.volume = Math.max(rms, this.volume * 0.7)
+        
+        // Enhanced volume calculation with smoothing
+        const smoothedRms = Math.max(rms, this.averageVolume * 0.7)
+        this.averageVolume = smoothedRms
+        
+        // Peak detection with decay
+        this.peakVolume = Math.max(peak, this.peakVolume * 0.95)
+        
+        // Final volume with better sensitivity
+        this.volume = Math.max(smoothedRms, this.peakVolume * 0.1)
 
         this.nextUpdateFrame -= samples.length
         if (this.nextUpdateFrame < 0) {
           this.nextUpdateFrame += this.intervalInFrames
-          this.port.postMessage({volume: this.volume})
+          this.port.postMessage({
+            volume: this.volume,
+            peak: this.peakVolume,
+            average: this.averageVolume
+          })
         }
       }
 
