@@ -31,7 +31,7 @@ const VolMeterWorket = `
       this.volume = 0
       this.peakVolume = 0
       this.averageVolume = 0
-      this.updateIntervalInMS = 25
+      this.updateIntervalInMS = 5 // Ultra-fast updates for instant real-time transcription
       this.nextUpdateFrame = this.updateIntervalInMS
       this.port.onmessage = event => {
         if (event.data.updateIntervalInMS) {
@@ -62,15 +62,15 @@ const VolMeterWorket = `
 
         rms = Math.sqrt(sum / samples.length)
         
-        // Enhanced volume calculation with smoothing
-        const smoothedRms = Math.max(rms, this.averageVolume * 0.7)
+        // Ultra-fast volume calculation for instant transcription
+        const smoothedRms = Math.max(rms, this.averageVolume * 0.3) // Minimal smoothing for instant response
         this.averageVolume = smoothedRms
         
-        // Peak detection with decay
-        this.peakVolume = Math.max(peak, this.peakVolume * 0.95)
+        // Peak detection with ultra-fast decay
+        this.peakVolume = Math.max(peak, this.peakVolume * 0.8) // Faster decay for instant response
         
-        // Final volume with better sensitivity
-        this.volume = Math.max(smoothedRms, this.peakVolume * 0.1)
+        // Final volume with maximum sensitivity
+        this.volume = Math.max(smoothedRms, this.peakVolume * 0.2) // Higher sensitivity for instant pickup
 
         this.nextUpdateFrame -= samples.length
         if (this.nextUpdateFrame < 0) {

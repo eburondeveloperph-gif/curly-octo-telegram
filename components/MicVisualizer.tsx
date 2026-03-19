@@ -34,6 +34,12 @@ const MicVisualizer: React.FC<MicVisualizerProps> = ({ volume, isActive }) => {
         
         // Smooth animation with decay
         newPeaks[i] = Math.max(targetHeight, newPeaks[i] * 0.85);
+        
+        // Set CSS variable for dynamic height
+        const barElement = document.querySelector(`.mic-visualizer-bar:nth-child(${i + 1})`) as HTMLElement;
+        if (barElement) {
+          barElement.style.setProperty('--bar-height', `${newPeaks[i]}px`);
+        }
       }
       return newPeaks;
     });
@@ -61,9 +67,6 @@ const MicVisualizer: React.FC<MicVisualizerProps> = ({ volume, isActive }) => {
       <div
         key={i}
         className={`mic-visualizer-bar ${color} ${isHovered ? 'hovered' : ''}`}
-        style={{
-          height: `${height}px`,
-        }}
       />
     );
   });

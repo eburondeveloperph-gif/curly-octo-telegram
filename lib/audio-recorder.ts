@@ -53,7 +53,7 @@ export class AudioRecorder {
 
   private starting: Promise<void> | null = null;
 
-  constructor(public sampleRate = 16000) {}
+  constructor(public sampleRate = 24000) {} // Higher sample rate for better quality and lower latency
 
   async start() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -71,41 +71,66 @@ export class AudioRecorder {
           channelCount: 1, // Mono for better speech recognition
         },
       });
-      this.audioContext = await audioContext({ sampleRate: this.sampleRate });
+      this.audioContext = await audioContext({ sampleRate: this.sampleRate }); // Optimized for fast response
       this.source = this.audioContext.createMediaStreamSource(this.stream);
 
-      // Enhanced filters for better speech clarity
+      // Enhanced filters for voice focus and noise cancellation
       const highpassFilter = this.audioContext.createBiquadFilter();
       highpassFilter.type = 'highpass';
-      highpassFilter.frequency.setValueAtTime(80, this.audioContext.currentTime); // Lower cutoff for more speech
+      highpassFilter.frequency.setValueAtTime(60, this.audioContext.currentTime); // Lower cutoff for voice fundamentals
+      highpassFilter.Q.setValueAtTime(1, this.audioContext.currentTime); // Gentle slope for natural sound
+
+      // Voice frequency emphasis (speech focus)
+      const voiceBandFilter = this.audioContext.createBiquadFilter();
+      voiceBandFilter.type = 'bandpass';
+      voiceBandFilter.frequency.setValueAtTime(1000, this.audioContext.currentTime); // Center on speech frequencies
+      voiceBandFilter.Q.setValueAtTime(2, this.audioContext.currentTime); // Focus on 300-3000Hz speech range
 
       const lowpassFilter = this.audioContext.createBiquadFilter();
       lowpassFilter.type = 'lowpass';
-      lowpassFilter.frequency.setValueAtTime(6000, this.audioContext.currentTime); // Better for speech
+      lowpassFilter.frequency.setValueAtTime(4000, this.audioContext.currentTime); // Cut high-frequency noise
+      lowpassFilter.Q.setValueAtTime(1, this.audioContext.currentTime); // Gentle rolloff
 
-      // Add a notch filter to reduce feedback
-      const notchFilter = this.audioContext.createBiquadFilter();
-      notchFilter.type = 'notch';
-      notchFilter.frequency.setValueAtTime(1000, this.audioContext.currentTime); // Reduce feedback at 1kHz
-      notchFilter.Q.setValueAtTime(5, this.audioContext.currentTime);
+      // Advanced noise reduction filter
+      const noiseFilter = this.audioContext.createBiquadFilter();
+      noiseFilter.type = 'notch';
+      noiseFilter.frequency.setValueAtTime(50, this.audioContext.currentTime); // Remove 50/60Hz hum
+      noiseFilter.Q.setValueAtTime(10, this.audioContext.currentTime); // Narrow notch
+
+      // Echo cancellation filter
+      const echoFilter = this.audioContext.createBiquadFilter();
+      echoFilter.type = 'allpass';
+      echoFilter.frequency.setValueAtTime(100, this.audioContext.currentTime); // Phase cancellation for echo
+      echoFilter.Q.setValueAtTime(0.7, this.audioContext.currentTime);
+
+      // Voice gate for noise reduction
+      const voiceGate = this.audioContext.createDynamicsCompressor();
+      voiceGate.threshold.setValueAtTime(-40, this.audioContext.currentTime); // Gate threshold
+      voiceGate.knee.setValueAtTime(0, this.audioContext.currentTime); // Hard gate
+      voiceGate.ratio.setValueAtTime(20, this.audioContext.currentTime); // High ratio for gating
+      voiceGate.attack.setValueAtTime(0.001, this.audioContext.currentTime); // Fast attack
+      voiceGate.release.setValueAtTime(0.05, this.audioContext.currentTime); // Fast release
 
       // Enhanced compressor for better dynamics
       const compressor = this.audioContext.createDynamicsCompressor();
-      compressor.threshold.setValueAtTime(-24, this.audioContext.currentTime);
-      compressor.knee.setValueAtTime(30, this.audioContext.currentTime);
-      compressor.ratio.setValueAtTime(8, this.audioContext.currentTime);
-      compressor.attack.setValueAtTime(0.003, this.audioContext.currentTime);
-      compressor.release.setValueAtTime(0.1, this.audioContext.currentTime);
+      compressor.threshold.setValueAtTime(-20, this.audioContext.currentTime); // More sensitive
+      compressor.knee.setValueAtTime(15, this.audioContext.currentTime); // Softer knee
+      compressor.ratio.setValueAtTime(3, this.audioContext.currentTime); // Less compression for natural sound
+      compressor.attack.setValueAtTime(0.001, this.audioContext.currentTime); // Ultra-fast attack
+      compressor.release.setValueAtTime(0.03, this.audioContext.currentTime); // Faster release
 
       // Add a gain node for volume control
       const gainNode = this.audioContext.createGain();
-      gainNode.gain.setValueAtTime(1.5, this.audioContext.currentTime); // Boost input level
+      gainNode.gain.setValueAtTime(2.0, this.audioContext.currentTime); // Higher boost for faster response
 
-      // Chain nodes: source -> highpass -> notch -> lowpass -> compressor -> gain -> worklets
+      // Chain nodes: source -> highpass -> voiceBand -> lowpass -> noise -> echo -> voiceGate -> compressor -> gain -> worklets
       this.source.connect(highpassFilter);
-      highpassFilter.connect(notchFilter);
-      notchFilter.connect(lowpassFilter);
-      lowpassFilter.connect(compressor);
+      highpassFilter.connect(voiceBandFilter);
+      voiceBandFilter.connect(lowpassFilter);
+      lowpassFilter.connect(noiseFilter);
+      noiseFilter.connect(echoFilter);
+      echoFilter.connect(voiceGate);
+      voiceGate.connect(compressor);
       compressor.connect(gainNode);
 
       const workletName = 'audio-recorder-worklet';
