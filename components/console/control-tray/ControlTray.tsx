@@ -167,6 +167,7 @@ function ControlTray({ children }: ControlTrayProps) {
   const [muted, setMuted] = useState(false);
   const [micVolume, setMicVolume] = useState(0);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
+  const micButtonRef = useRef<HTMLButtonElement>(null);
   const introAudioRef = useRef<HTMLAudioElement | null>(null);
   const shouldKeepListeningRef = useRef(false);
   const speechRecognitionRef = useRef<SpeechRecognitionLike | null>(null);
@@ -489,17 +490,31 @@ function ControlTray({ children }: ControlTrayProps) {
 
   const isMicActive = connected && !muted;
 
+  // Set CSS custom property for mic volume
+  useEffect(() => {
+    if (micButtonRef.current) {
+      micButtonRef.current.style.setProperty('--mic-volume', micVolume.toString());
+    }
+    
+    // Cleanup function to remove the property when component unmounts
+    return () => {
+      if (micButtonRef.current) {
+        micButtonRef.current.style.removeProperty('--mic-volume');
+      }
+    };
+  }, [micVolume]);
+
   return (
     <section className="control-tray">
       <MicVisualizer volume={micVolume} isActive={isMicActive} />
       <div className="control-tray-buttons">
         <nav className={cn('actions-nav')}>
           <button
+            ref={micButtonRef}
             className={cn('action-button mic-button', { active: isMicActive })}
             onClick={handleMicClick}
             title={micButtonTitle}
             disabled={!session}
-            style={{ '--mic-volume': micVolume } as React.CSSProperties}
           >
             {!muted ? (
               <span className="material-symbols-outlined filled">mic</span>
