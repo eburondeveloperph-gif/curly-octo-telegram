@@ -1,0 +1,75 @@
+{
+  "permissions": {
+    "microphone": {
+      "description": "Required for audio input and speech recognition",
+      "purpose": "Real-time translation and voice processing",
+      "required": true,
+      "privacy": "Audio is processed locally and transmitted securely for translation"
+    },
+    "audio": {
+      "description": "Required for audio playback and text-to-speech",
+      "purpose": "Play translated audio responses",
+      "required": true,
+      "privacy": "Audio output only, no recording"
+    },
+    "storage": {
+      "description": "Local storage for settings and preferences",
+      "purpose": "Save user preferences and translation history",
+      "required": false,
+      "privacy": "Only stores non-sensitive user data"
+    },
+    "network": {
+      "description": "Network access for translation API",
+      "purpose": "Connect to translation services",
+      "required": true,
+      "privacy": "Encrypted communication with translation APIs"
+    }
+  },
+  "restricted_permissions": {
+    "camera": {
+      "status": "forbidden",
+      "reason": "Not required for translation functionality"
+    },
+    "location": {
+      "status": "forbidden",
+      "reason": "Not required for translation functionality"
+    },
+    "contacts": {
+      "status": "forbidden",
+      "reason": "Not required for translation functionality"
+    },
+    "notifications": {
+      "status": "forbidden",
+      "reason": "Not required for translation functionality"
+    }
+  },
+  "security": {
+    "content_security_policy": {
+      "default-src": "'self'",
+      "script-src": "'self' 'unsafe-inline'",
+      "style-src": "'self' 'unsafe-inline'",
+      "connect-src": "'self' https://*.google.com https://*.supabase.co",
+      "media-src": "'self' blob:",
+      "img-src": "'self' data: https:"
+    },
+    "data_protection": {
+      "encryption": "AES-256",
+      "data_retention": "30 days",
+      "user_anonymization": true,
+      "audit_logging": true
+    }
+  },
+  "compliance": {
+    "gdpr": {
+      "data_controller": "Application Owner",
+      "data_protection_officer": "privacy@example.com",
+      "user_rights": ["access", "rectification", "erasure", "portability", "objection"]
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "screen_reader_support": true,
+      "keyboard_navigation": true,
+      "high_contrast": true
+    }
+  }
+}

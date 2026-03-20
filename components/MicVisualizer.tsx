@@ -22,6 +22,7 @@ const MicVisualizer: React.FC<MicVisualizerProps> = ({ volume, isActive }) => {
       const timer = setTimeout(() => setIsAnimating(false), 100);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [volume, isActive]);
 
   useEffect(() => {
