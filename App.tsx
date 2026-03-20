@@ -63,7 +63,7 @@ function App() {
 
   return (
     <div className="App">
-      <LiveAPIProvider apiKey={API_KEY}>
+      <LiveAPIProvider apiKey={API_KEY!}>
         <ErrorScreen />
         <Header />
         <Sidebar />
