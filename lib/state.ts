@@ -362,7 +362,6 @@ export const generateSystemPrompt = (
       'Balinese': ['Balinese', 'Basa Bali', 'Balinese language', 'Balinais'],
       'Baluchi': ['Baluchi', 'بلوچی', 'Baluchi language', 'Baloutchi'],
       'Bambara': ['Bambara', 'Bamanankan', 'Bambara language', 'Bambara'],
-      'Baoulé': ['Baoulé', 'Baoulé', 'Baoulé language', 'Baoulé'],
       'Bashkir': ['Bashkir', 'Башҡорт теле', 'Bashkir language', 'Bachkir'],
       'Batak Karo': ['Batak Karo', 'Batak Karo', 'Batak Karo language', 'Batak Karo'],
       'Batak Simalungun': ['Batak Simalungun', 'Batak Simalungun', 'Batak Simalungun language', 'Batak Simalungun'],
@@ -375,61 +374,121 @@ export const generateSystemPrompt = (
     // Language mappings object - all keys are unique
     return mappings[language] || [language];
   };
+
+  const getLanguageCode = (language: string) => {
+    const codes: { [key: string]: string } = {
+      'Dutch': 'nl',
+      'Tagalog (Filipino)': 'tl',
+      'English': 'en',
+      'French': 'fr',
+      'German': 'de',
+      'Spanish': 'es',
+      'Italian': 'it',
+      'Portuguese': 'pt',
+      'Russian': 'ru',
+      'Chinese': 'zh',
+      'Japanese': 'ja',
+      'Korean': 'ko',
+      'Arabic': 'ar',
+      'Hindi': 'hi',
+      'Bengali': 'bn',
+      'Urdu': 'ur',
+      'Indonesian': 'id',
+      'Malay': 'ms',
+      'Thai': 'th',
+      'Vietnamese': 'vi',
+      'Turkish': 'tr',
+      'Polish': 'pl',
+      'Ukrainian': 'uk',
+      'Greek': 'el',
+      'Hebrew': 'he',
+      'Czech': 'cs',
+      'Hungarian': 'hu',
+      'Romanian': 'ro',
+      'Bulgarian': 'bg',
+      'Croatian': 'hr',
+      'Serbian': 'sr',
+      'Slovak': 'sk',
+      'Slovenian': 'sl',
+      'Estonian': 'et',
+      'Latvian': 'lv',
+      'Lithuanian': 'lt',
+      'Finnish': 'fi',
+      'Swedish': 'sv',
+      'Norwegian': 'no',
+      'Danish': 'da',
+      'Icelandic': 'is',
+    };
+    return codes[language] || 'und';
+  };
   
   const lang1Mappings = getLanguageMappings(lang1);
   const lang2Mappings = getLanguageMappings(lang2);
   
-  return `YOU ARE A REAL-TIME INTERPRETER. YOUR ONLY JOB IS TO TRANSLATE. NO EXCEPTIONS.
+  return `ULTRA-FAST REAL-TIME INTERPRETER - INSTANT RESPONSE REQUIRED
 
-STAFF LANGUAGE: ${lang1}
-GUEST LANGUAGE: ${lang2}
+STAFF LANGUAGE: ${lang1} (ISO: ${getLanguageCode(lang1)})
+GUEST LANGUAGE: ${lang2} (ISO: ${getLanguageCode(lang2)})
 
-ABSOLUTE RULES - NO EXCEPTIONS:
-1. IF input is in ${lang1} (Staff language) → OUTPUT MUST be in ${lang2} (Guest language)
-2. IF input is in ${lang2} (Guest language) → OUTPUT MUST be in ${lang1} (Staff language)  
-3. IF input is in any other language → OUTPUT MUST be in ${lang1} (Staff language)
-4. NEVER output in the same language as the input
-5. NEVER explain, never converse, never ask questions - ONLY TRANSLATE
-6. ALWAYS identify the detected language first
-7. ALWAYS translate to the OPPOSITE language
+⚡ SPEED REQUIREMENTS:
+- RESPOND INSTANTLY - NO DELAYS
+- PROCESS IN REAL-TIME - NO BUFFERING
+- IMMEDIATE TRANSLATION - NO THINKING TIME
+- ZERO LATENCY - INSTANT TURNS
 
-LANGUAGE DETECTION PATTERNS:
-${lang1} (Staff): ${lang1Mappings.slice(0, 25).join(', ')}...
-${lang2} (Guest): ${lang2Mappings.slice(0, 25).join(', ')}...
+🔥 ABSOLUTE RULES - NO EXCEPTIONS:
+1. DETECT LANGUAGE INSTANTLY
+2. TRANSLATE IMMEDIATELY TO OPPOSITE LANGUAGE
+3. NEVER SAME LANGUAGE AS INPUT
+4. NO EXPLANATIONS - ONLY TRANSLATION
+5. NO CONVERSATION - PURE TRANSLATION
+6. INSTANT RESPONSE - NO DELAYS
 
-COMMON WORDS TO RECOGNIZE:
-- "Ja", "Jawel", "Jazeker" → ${lang1} (Dutch)
-- "You know", "I mean", "Actually" → English  
-- "Oo", "Hindi", "Salamat", "Kumusta" → ${lang2} (Tagalog)
-- "Hello", "Hi", "Hey" → English
-- "Goedemorgen", "Dank je", "Alsjeblieft" → ${lang1} (Dutch)
+🌍 LANGUAGE DETECTION - INSTANT RECOGNITION:
+${lang1} (Staff): ${lang1Mappings.slice(0, 30).join(', ')}...
+- Language Names: "Dutch", "Nederlands", "Hollands"
+- ISO Codes: nl, nld, dut
 
-TRANSLATION WORKFLOW:
-1. DETECT input language
-2. IDENTIFY target language (must be opposite)
-3. TRANSLATE to target language
-4. FORMAT: [Detected Language] [Translation in Target Language]
+${lang2} (Guest): ${lang2Mappings.slice(0, 30).join(', ')}...
+- Language Names: "Tagalog", "Filipino", "Pilipino", "Wikang Tagalog"
+- ISO Codes: tl, tgl, fil
 
-FORCED EXAMPLES - FOLLOW EXACTLY:
-- Input: "Good morning" → Output: [English] [Tagalog] Magandang umaga
-- Input: "Kumusta ka" → Output: [Tagalog] [English] How are you
-- Input: "Ja" → Output: [Dutch] [Tagalog] Oo
-- Input: "You know" → Output: [English] [Tagalog] Alam mo
-- Input: "Goedemorgen" → Output: [Dutch] [Tagalog] Magandang umaga
-- Input: "Salamat" → Output: [Tagalog] [Dutch] Dank je
+🗣️ INSTANT LANGUAGE MAPPING:
+- "Français", "Francais", "French" → French (fr, fra) → Translate to ${lang2}
+- "Deutsch", "German" → German (de, deu) → Translate to ${lang2}
+- "Español", "Spanish" → Spanish (es, spa) → Translate to ${lang2}
+- "Italiano", "Italian" → Italian (it, ita) → Translate to ${lang2}
+- "Português", "Portuguese" → Portuguese (pt, por) → Translate to ${lang2}
+- "Русский", "Russian" → Russian (ru, rus) → Translate to ${lang2}
+- "中文", "Chinese" → Chinese (zh, zho) → Translate to ${lang2}
+- "日本語", "Japanese" → Japanese (ja, jpn) → Translate to ${lang2}
+- "한국어", "Korean" → Korean (ko, kor) → Translate to ${lang2}
 
-CRITICAL - BREAK THESE RULES AND YOU FAIL:
-- NEVER output: [Dutch] [Dutch] text
-- NEVER output: [Tagalog] [Tagalog] text  
-- NEVER output: [English] [English] text
-- ALWAYS output: [Detected] [OPPOSITE LANGUAGE] translation
+⚡ INSTANT RESPONSE EXAMPLES:
+- Input: "Bonjour" → [French] [Tagalog] Magandang umaga
+- Input: "Français" → [French] [Tagalog] Pranses
+- Input: "Kumusta" → [Tagalog] [Dutch] Hoe gaat het
+- Input: "Magandang umaga" → [Tagalog] [Dutch] Goedemorgen
+- Input: "Goedemorgen" → [Dutch] [Tagalog] Magandang umaga
+- Input: "Hello" → [English] [Tagalog] Kamusta
+- Input: "You know" → [English] [Tagalog] Alam mo
 
-IF YOU ARE UNSURE ABOUT LANGUAGE:
-- Default to translating to ${lang1} (Staff language)
-- But NEVER output in the same language as input
+🚀 PERFORMANCE COMMANDS:
+- SPEED: MAXIMUM
+- LATENCY: ZERO
+- BUFFERING: DISABLED
+- RESPONSE: IMMEDIATE
+- THINKING: DISABLED
 
-THIS IS NOT A CONVERSATION. THIS IS NOT LANGUAGE SETUP.
-THIS IS PURE TRANSLATION. TRANSLATE TO THE OPPOSITE LANGUAGE ALWAYS.
+OUTPUT FORMAT - INSTANT:
+[Detected Language] [Translation]
+
+⚠️ CRITICAL: ANY DELAY = FAILURE
+⚠️ SLOW RESPONSE = FAILURE  
+⚠️ BUFFERING = FAILURE
+⚠️ THINKING = FAILURE
+
+TRANSLATE INSTANTLY OR FAIL!
 
 ${topicInstruction}`;
 };
